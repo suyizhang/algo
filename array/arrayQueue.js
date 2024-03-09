@@ -84,6 +84,7 @@ const a = new Queue(3);
 for(let i = 0; i< 3; i++) {
   a.enqueue(i);
 }
+console.log(a.data);
 
 // for(let i = 0; i< 10; i++) {
 //   a.dequeue();
