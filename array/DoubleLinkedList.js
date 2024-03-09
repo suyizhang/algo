@@ -1,30 +1,57 @@
 /**
- * 单向链表
+ * 双向链表
+ * 
  */
 
 class Node {
   constructor(data) {
     this.data = data;
     this.next = null;
+    this.prev = null;
   }
 
   insertAfter(node) {
+    node.prev = this;
     node.next = this.next;
+
+    if (this.next) {
+      this.next.prev = node;
+    }
+
     this.next = node;
   }
 
-  removeAfter() {
-    const node = this.next;
-    if (node) {
-      this.next = node.next;
-      node.next = null;
+  insertBefore(node) {
+    node.next = this;
+    node.prev = this.prev;
+
+    if (this.prev) {
+      this.prev.next = node;
     }
+
+    // 最后修改this 更安全
+    this.prev = node;
+  }
+
+  remove() {
+    if (this.next) {
+      this.next.prev = this.prev;
+    }
+
+    if (this.prev) {
+      this.prev.next = this.next;
+    }
+
+    this.prev = null;
+    this.next = null;
   }
 }
 
-class LinkedList {
+class DoubleLinkedList {
   constructor() {
-    this.head = null;
+    const dummy = new Node();
+    this.head = dummy;
+    this.tail = dummy;
     this.size = 0;
   }
 
@@ -34,27 +61,17 @@ class LinkedList {
 
   insert(i, value) {
     if (this.size < i || i < 0) {
-      throw new RangeError('out of range');
+      throw new RangeError("out of range");
     }
     const node = new Node(value);
-
-    if (this.head === null) {
-      this.head = node;
-      this.size += 1;
-      return;
-    }
-
-    if (i === 0) {
-      node.next = this.head;
-      this.head = node;
-      this.size += 1;
-      return;
-    }
-
     const p = this._getNode(i - 1);
-     p.insertAfter(node);
+    p.insertAfter(node);
+    // node 为链表最后一个节点  将tail 指向node;
+    if (!node.next) {
+      this.tail = node;
+    }
 
-     this.size += 1;
+    this.size += 1;
   }
 
   prepend(value) {
@@ -66,19 +83,21 @@ class LinkedList {
       throw new RangeError('out of range');
     }
    
-    const p = this._getNode(i - 1);
-    p.removeAfter();
+    const p = this._getNode(i);
+    p.remove();
+    
     this.size -= 1;
   }
 
   // 获取节点 i
   _getNode(i) {
     let p = this.head;
-    for (let j = 0; j < i; j++) {
+    for (let j = -1; j < i; j++) {
       p = p.next;
     }
     return p;
   }
+
 
   get(i) {
     if (i > this.size - 1 || i < 0) {
@@ -100,30 +119,24 @@ class LinkedList {
   _print() {
     const arr = [];
     let p = this.head;
-    while(p) {
-      arr.push(p.data);
+    while (p.next) {
       p = p.next;
+      arr.push(p.data);
     }
-    console.log(`[ ${arr.join(', ')} ]`);
+    console.log(`[ ${arr.join(", ")} ]`);
   }
 }
 
-let a = new LinkedList();
+let a = new DoubleLinkedList();
 a.append(1);
 a.append(2);
 a.append(3);
 a.insert(2, 4);
 a.prepend(0);
-
+console.log(a.size);
+a._print();
+a.remove(0);
 a._print();
 
-for (let i = 0; i < a.size; i++) {
-  console.log(a.get(i));
-}
-
-for (let i = 0; i < a.size; i++) {
-  a.set(i, i * i);
-}
-
-a._print();
-
+console.log(a.head);
+console.log(a.tail);

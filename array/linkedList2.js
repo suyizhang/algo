@@ -27,7 +27,6 @@ class LinkedList {
   constructor() {
     const dummy = new Node();
     this.head = dummy;
-    this.tail = dummy;
     this.size = 0;
   }
 
@@ -57,7 +56,7 @@ class LinkedList {
     }
    
     const p = this._getNode(i - 1);
-    p.å();
+    p.removeAfter();
     this.size -= 1;
   }
 
