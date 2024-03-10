@@ -22,12 +22,25 @@ class Stack {
     }
     return this.data[this.data.length - 1];
   }
+
+  isEmpty() {
+    return this.data.length === 0;
+  }
 }
 
-const b = new Stack();
+function stack_test() {
+  const b = new Stack();
 
-b.push(4);
-console.log(b.data);
-b.pop();
-console.log(b.data);
-console.log(b.top());
+  b.push(4);
+  b.push(5);
+  b.push(6);
+  // b.pop();
+  b.pop();
+  console.log(b.data);
+  console.log(b.top());
+}
+
+// stack_test();
+
+module.exports = {Stack};
+
