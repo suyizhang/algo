@@ -1,5 +1,5 @@
 const { Stack } = require('../array/stack');
-
+const { Queue } = require('../array/arrayQueue');
 /**
  * 
  *
@@ -86,17 +86,34 @@ class Node {
 
   	// 先序遍历
 	preorder_traversal(func) {
-
+    if (!func) return;
+    func(this.data);
+    for(let i = 0; i < this.children.length; i++) {
+      this.children[i].preorder_traversal(func);
+    }
   }
-  
+
 	// 后序遍历
   postorder_traversal(func) {
-
+    if (!func) return;
+    for(let i = 0; i < this.children.length; i++) {
+      this.children[i].postorder_traversal(func);
+    }
+    func(this.data);
   }
-    // 中序遍历
+
+    // 层序遍历
     // 队列实现
   levelorder_traversal(func) {
-
+    const queue = new Queue(1000);
+    queue.enqueue(this);
+    while(!queue._isEmpty()) {
+      const current = queue.dequeue();
+      func(current.data);
+      for(let i = 0; i < current.children.length; i++) {
+        queue.enqueue(current.children[i]);
+      }
+    }
   }
 }
 
@@ -190,7 +207,10 @@ function build_from_indented_text_stack(a, size) {
 
 function test_build_node() {
   const node = build_from_indented_text(a, 4);
-  node.print();
+  // node.print();
+  node.preorder_traversal((v) => console.log(`preorder_traversal  - ${v}`))
+  node.postorder_traversal((v) => console.log(`postorder_traversal  - ${v}`))
+  node.levelorder_traversal((v) => console.log(`levelorder_traversal  - ${v}`))
 }
 
 

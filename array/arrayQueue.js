@@ -28,7 +28,7 @@ class Queue {
     }
     this.data[this.tail] = x;
     this.tail = (this.tail + 1) % this.size;
-    this._print();
+    // this._print();
   }
 
   // 出列
@@ -38,7 +38,7 @@ class Queue {
     }
     const data = this.data[this.head];
     this.head = (this.head + 1) % this.size;
-    this._print();
+    // this._print();
     return data;
   }
 
@@ -79,13 +79,20 @@ class Queue {
   // }
 }
 
-const a = new Queue(3);
+function queue_test() {
+  const a = new Queue(3);
 
-for(let i = 0; i< 3; i++) {
-  a.enqueue(i);
+  for(let i = 0; i< 3; i++) {
+    a.enqueue(i);
+  }
+  console.log(a.data);
 }
-console.log(a.data);
+
+
 
 // for(let i = 0; i< 10; i++) {
 //   a.dequeue();
 // }
+
+
+module.exports = { Queue };
