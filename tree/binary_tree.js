@@ -117,6 +117,10 @@ class Node {
     }
   }
 
+  toStr() {
+    return toString(this.data);
+  }
+
   /**
  * 
 
@@ -142,11 +146,11 @@ C  D G
 
       let right_width = 0;
       if (node.right) {
-        _f(node.right, offset + left_width + node.data.length, y + 1);
+        _f(node.right, offset + left_width + node.toStr().length, y + 1);
         right_width = node.right.width;
       }
 
-      node.width = left_width + right_width + node.data.length;
+      node.width = left_width + right_width + node.toStr().length;
       node.x = offset + left_width;
       node.y = y;
     }
@@ -178,7 +182,7 @@ C  D G
       }
 
       putStr(new Array(node.x - cur_x).fill(" ").join(""));
-      putStr(node.data);
+      putStr(node.toStr());
 
       if (node.left) {
         q.enqueue(node.left);
@@ -284,21 +288,27 @@ const tree_b = {
   },
 };
 
-function build_from_json(json) {
-  const c = new Node(json.e);
-  if (json.l) {
-    c.setLeft(build_from_json(json.l));
+function build_from_obj(obj) {
+  const c = new Node(obj.e);
+  if (obj.l) {
+    c.setLeft(build_from_obj(obj.l));
   }
-  if (json.r) {
-    c.setRight(build_from_json(json.r));
+  if (obj.r) {
+    c.setRight(build_from_obj(obj.r));
   }
   return c;
 }
 
-function build_from_json_test() {
-  const node = build_from_json(tree_b);
+function build_from_obj_test() {
+  const node = build_from_obj(tree_b);
   node.print();
-  // console.log(node);
 }
 
-build_from_json_test();
+// build_from_json_test();
+module.exports = { Queue };
+
+module.exports = {
+  Node,
+  build_from_obj,
+  tree_a,
+}
