@@ -71,18 +71,6 @@ class Node {
     this.right = node;
   }
 
-  remove() {
-    if (this.parent === null) {
-      return;
-    }
-
-    const parent = this.parent;
-    if (parent.left === this) {
-      parent.left = null;
-    } else {
-      parent.right = null;
-    }
-  }
   // 先序遍历
   preorder_traversal(func) {
     func(this);
