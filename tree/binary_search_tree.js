@@ -3,12 +3,29 @@ const { Node: TreeNode } = require("./binary_tree");
 // 左子树所有节点的 key "小于" 当前节点的 key
 // 右子树所有节点的 key "大于" 当前节点的 key
 // Node:
-// 	key = ?; value = ?;
+// 	// key = ?; value = ?;
 // 	// 或
 // 	data = { key: ?, value: ? };
 
-// 	insert(key, value) -> Node
+// 	insert(key, value) -> Node // 返回新创建的节点
 // 	find(key) -> Node
+// 	lowerBound(key) -> Node // 返回下界 (>= key 的第一个节点)
+// 	upperBound(key) -> Node // 返回上界 ( > key 的第一个节点)
+
+// 	_erase() -> Node // 将当前节点删除，返回子树的根节点
+// 	remove(key) -> removed, Node // 根据 key 找到节点，并删除; 返回子树的根节点
+
+// 	min() -> Node // 子树最小的节点
+// 	max() -> Node // 子树最大的节点
+// 	prev() -> None // 前一个节点
+// 	next() -> Node // 后一个节点
+
+// Tree:
+// 	_root
+
+// 	insert(key, value) -> Node
+// 	remove(key) -> bool
+
 class Node extends TreeNode {
   constructor(props) {
     super(props);
@@ -28,41 +45,85 @@ class Node extends TreeNode {
     }
   }
 
+  getRoot() {
+    let node = this;
+    while (node.parent) {
+      node = node.parent;
+    }
+    return node;
+  }
+
   insert(key, value) {
     if (key === this.data.key) {
       this.data.value = value;
-      return;
+      return this;
     }
+    let newNode = null;
     if (key < this.data.key) {
-      if (!this.left) {
-        this.setLeft(new Node({ key, value }));
-        return;
+      if (this.left) {
+        newNode = this.left.insert(key, value);
+      } else {
+        newNode = new Node({ key, value });
+        this.setLeft(newNode);
       }
-      this.left.insert(key, value);
     } else {
-      if (!this.right) {
-        this.setRight(new Node({ key, value }));
-        return;
+      if (this.right) {
+        newNode = this.right.insert(key, value);
+      } else {
+        newNode = new Node({ key, value });
+        this.setRight(newNode);
       }
-      this.right.insert(key, value);
     }
+    this._rebalance();
+    return newNode;
   }
-  // remove() -> Node (root)
-  /** 将当前节点删除 返回子节点 */
-  erase() {
+
+  _balance_upward() {
+
+    const arr = [];
+
+    let p = this;
+    while(p) {
+      arr.push(p);
+      p = p.parent;
+    }
+
+    arr.forEach(v => {
+      v._balance();
+    })
+  }
+
+  _balance() {
+
+  }
+
+  /** 返回子树根节点 */
+  remove(key) {
+    const node = this.find(key);
+    if (!node) return [false, this];
+    const node2 = node.erase();
+    // 删除当前节点时  返回新的根节点
+    if (node === this) {
+      return [true, node2];
+    }
+    return [true, this];
+  }
+
+  /** 将当前节点删除 返回子树根节点 */
+  _erase() {
     let new_root = null;
     if (!this.left && !this.right) {
     } else if (!this.left) {
-      new_root = this.left;
-    } else if (!this.right) {
       new_root = this.right;
+    } else if (!this.right) {
+      new_root = this.left;
     } else {
       let cur = this.right;
       while (cur.left) {
         cur = cur.left;
       }
       if (cur !== this.right) {
-        cur.remove();
+        cur.erase();
         cur.setRight(this.right);
       }
       cur.setLeft(this.left);
@@ -80,52 +141,10 @@ class Node extends TreeNode {
     this.parent = null;
     this.left = null;
     this.right = null;
-
     return new_root;
   }
 
   // 根据 key 找到节点，并删除；removed 表示删除是否发生；node 为子树的新根节点
-  remove(key) {
-    // 判断当前key 是否在搜索树中
-    if (!this.find(key)) throw new Error("");
-
-    let removed = false;
-
-    if (key < this.data.key) {
-      if (this.left) {
-        const params = this.left.remove(key);
-        this.setLeft(params.node);
-        removed = true;
-      }
-      return { removed, node: this };
-    }
-
-    if (key > this.data.key) {
-      if (this.right) {
-        const params = this.right.remove(key);
-        this.setRight(params.node);
-        removed = true;
-      }
-      return { removed, node: this };
-    }
-
-    removed = true;
-
-    if (!this.left && !this.right) {
-      return { removed, node: null };
-    } else if (!this.right) {
-      return { removed, node: this.left };
-    } else if (!this.left) {
-      return { removed, node: this.right };
-    } else {
-      const min = this.right.min();
-      if (min !== this.right) {
-        min.setRight(this.right.remove(min.data.key).node);
-      }
-      min.setLeft(this.left);
-      return { removed, node: min };
-    }
-  }
 
   // 子树最小的节点
   min() {
@@ -135,6 +154,8 @@ class Node extends TreeNode {
     }
     return cur;
   }
+
+  // rebalance() {}
 
   // 子树最大的节点
   max() {
@@ -168,7 +189,7 @@ class Node extends TreeNode {
 
   // 返回下界 (>= key 的第一个节点)
   lowerBound(key) {
-    if(this.data.key < key) {
+    if (this.data.key < key) {
       if (this.right) {
         return this.right.lowerBound(key);
       }
@@ -187,7 +208,6 @@ class Node extends TreeNode {
 
   // 返回上界 (< key 的最后一个节点)
   upperBound(key) {
-
     if (this.data.key >= key) {
       if (this.left) {
         return this.left.upperBound(key);
@@ -211,6 +231,44 @@ class Node extends TreeNode {
   }
 }
 
+class Tree {
+  constructor() {
+    this.root = null;
+  }
+
+  find(key) {
+    if (!this.root) return null;
+    return this.root.find(key);
+  }
+
+  insert(key, value) {
+    if (!this.root) {
+      const node = new Node({ key, value });
+      this.root = node;
+      return node;
+    }
+
+    const node = this.root.insert(key, value);
+
+    this.root = node.getRoot();
+    return node;
+  }
+
+  remove(key) {
+    if (!this.root) return false;
+
+    const [removed, node] = this.root.remove(key);
+    this.root = node;
+    return removed;
+  }
+
+  print() {
+    if (this.root) {
+      this.root.print();
+    }
+  }
+}
+
 function test1() {
   const arr = [2, 4, 5, 7, 3, 8, 1, 9];
   let root = new Node({ key: 6 });
@@ -230,7 +288,7 @@ function test1() {
 // test1();
 
 function test2() {
-  console.log('-----test2-----');
+  console.log("-----test2-----");
   const arr = [2, 4, 5, 7, 3, 8, 1, 9];
   let root = new Node({ key: 6 });
   arr.forEach((v) => {
@@ -250,4 +308,20 @@ function test2() {
   console.log(root.upperBound(8).toStr());
 }
 
-test2();
+// test2();
+
+function test3() {
+  const tree = new Tree();
+
+  for (let i = 0; i < 10; i++) {
+    tree.insert(i);
+  }
+
+  tree.print();
+
+  tree.remove(5);
+
+  tree.print();
+}
+
+test3();

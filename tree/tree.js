@@ -165,6 +165,7 @@ class Node {
   }
 }
 
+
 /** 通过缩进文本来构建树 */
 function build_from_indented_text(a, size) {
   // 使用 Node 与递归来实现
