@@ -29,6 +29,7 @@ const { Node: TreeNode } = require("./binary_tree");
 class Node extends TreeNode {
   constructor(props) {
     super(props);
+    this.height = 0;
   }
 
   find(key) {
@@ -53,95 +54,184 @@ class Node extends TreeNode {
     return node;
   }
 
+  refreshHeight() {
+    this.height = 1 + Math.max(this.getRightH(), this.getLeftH());
+  }
+
+  getRightH() {
+    return this.right ? this.right.height : -1;
+  }
+
+  getLeftH() {
+    return this.left ? this.left.height : -1;
+  }
+
+  // 返回插入的节点与子树的根节点
   insert(key, value) {
     if (key === this.data.key) {
       this.data.value = value;
-      return this;
+      return [this, this];
     }
     let newNode = null;
     if (key < this.data.key) {
       if (this.left) {
-        newNode = this.left.insert(key, value);
+        const [a] = this.left.insert(key, value);
+        newNode = a;
       } else {
         newNode = new Node({ key, value });
         this.setLeft(newNode);
       }
     } else {
       if (this.right) {
-        newNode = this.right.insert(key, value);
+        const [a] = this.right.insert(key, value);
+        newNode = a;
       } else {
         newNode = new Node({ key, value });
         this.setRight(newNode);
       }
     }
-    this._rebalance();
-    return newNode;
+    const root = this._balance();
+    return [newNode, root];
   }
 
   _balance_upward() {
-
     const arr = [];
 
     let p = this;
-    while(p) {
+    while (p) {
       arr.push(p);
       p = p.parent;
     }
 
-    arr.forEach(v => {
-      v._balance();
-    })
+    let root = null;
+
+    arr.forEach((v) => {
+      root = v._balance();
+    });
+    return root;
   }
 
+  // 返回当前节点
   _balance() {
+    const diff = this.getLeftH() - this.getRightH();
+    let a = this;
+    let b = null;
+    let c = null;
 
+    let parent = a.parent;
+
+    let root = a;
+    if (diff === 2) {
+      b = a.left;
+      if (b.getLeftH() > b.getRightH()) {
+        a.setLeft(b.right);
+        b.setRight(a);
+        root = b;
+      } else {
+        c = b.right;
+        a.setLeft(c.right);
+        b.setRight(c.left);
+        c.setRight(a);
+        c.setLeft(b);
+        root = c;
+      }
+    } else if (diff === -2) {
+      b = a.right;
+      if (b.getLeftH() < b.getRightH()) {
+        a.setRight(b.left);
+        b.setLeft(a);
+        root = b;
+      } else {
+        c = b.left;
+        a.setRight(c.left);
+        b.setLeft(c.right);
+        c.setRight(b);
+        c.setLeft(a);
+        root = c;
+      }
+    }
+
+    // 设置root.parent (parent 可能为null)
+    root.parent = parent;
+
+    if (parent) {
+      // console.log(parent?.left === a, parent?.right === a);
+      if (parent.left === a) {
+        parent.setLeft(root);
+      } else if (parent.right === a) {
+        parent.setRight(root);
+      }
+    }
+
+    a.refreshHeight();
+
+    if (b) {
+      b.refreshHeight();
+    }
+
+    if (c) {
+      c.refreshHeight();
+    }
+
+    return root;
   }
 
-  /** 返回子树根节点 */
+  /** 返回根节点 */
   remove(key) {
     const node = this.find(key);
     if (!node) return [false, this];
-    const node2 = node.erase();
-    // 删除当前节点时  返回新的根节点
-    if (node === this) {
-      return [true, node2];
-    }
-    return [true, this];
+    const root = node._erase(key);
+    return [true, root];
   }
 
-  /** 将当前节点删除 返回子树根节点 */
+  /** 将当前节点删除 返回根节点 */
   _erase() {
     let new_root = null;
+    // 作为_balance_upward 的起点 向上
+    let start = null;
     if (!this.left && !this.right) {
+      new_root = this.parent;
+      start = new_root;
     } else if (!this.left) {
       new_root = this.right;
+      start = new_root;
     } else if (!this.right) {
       new_root = this.left;
+      start = new_root;
     } else {
       let cur = this.right;
       while (cur.left) {
         cur = cur.left;
       }
       if (cur !== this.right) {
-        cur.erase();
+        // cur移走后将cur右子节点挂在cur父节点下  删除cur
+        cur.parent.setLeft(cur.right);
         cur.setRight(this.right);
       }
       cur.setLeft(this.left);
       new_root = cur;
+      start = cur.parent;
     }
 
     if (this.parent) {
       if (this.parent.left === this) {
         this.parent.setLeft(new_root);
-      } else {
+      } else if (this.parent.right === this) {
         this.parent.setRight(new_root);
       }
+    } else {
+      new_root.parent = null;
     }
 
     this.parent = null;
     this.left = null;
     this.right = null;
-    return new_root;
+
+    if (start === null) {
+      return null;
+    }
+
+    return start._balance_upward();
   }
 
   // 根据 key 找到节点，并删除；removed 表示删除是否发生；node 为子树的新根节点
@@ -164,25 +254,35 @@ class Node extends TreeNode {
 
   // 前一个节点 1. 左子树  2. 父节点
   prev() {
-    if (this.left) {
-      return this.left.max();
-    }
+    const key = this.data.key;
+    let p = this;
 
-    if (this.parent && this.parent.data.key < this.data.key) {
-      return this.parent;
-    }
+    while (p) {
+      if (p.data.key < key) {
+        return p
+      }
+      if (p.left && p.left.data.key < key) {
+        return p.left.max()
+      }
+      p = p.parent
+   }
 
     return null;
   }
   // 后一个节点  1. 右子树  2.父节点
   next() {
-    if (this.right) {
-      return this.right.min();
-    }
+    const key = this.data.key;
+    let p = this;
 
-    if (this.parent && this.parent.data.key > this.data.key) {
-      return this.parent;
-    }
+    while (p) {
+      if (p.data.key > key) {
+        return p
+      }
+      if (p.right && p.right.data.key > key) {
+        return p.right.min()
+      }
+      p = p.parent
+   }
 
     return null;
   }
@@ -206,27 +306,42 @@ class Node extends TreeNode {
     return this;
   }
 
-  // 返回上界 (< key 的最后一个节点)
+  // 返回上界 (> key的第一个节点)
   upperBound(key) {
-    if (this.data.key >= key) {
-      if (this.left) {
-        return this.left.upperBound(key);
+    if (this.data.key <= key) {
+      if (this.right) {
+        this.right.upperBound(key);
       }
       return null;
     }
 
-    if (this.right) {
-      const node = this.right.upperBound(key);
+    if (this.left) {
+      const node = this.left.upperBound(key);
       if (node) {
         return node;
       }
     }
+
+    return this;
+    // if (this.data.key >= key) {
+    //   if (this.left) {
+    //     return this.left.upperBound(key);
+    //   }
+    //   return null;
+    // }
+
+    // if (this.right) {
+    //   const node = this.right.upperBound(key);
+    //   if (node) {
+    //     return node;
+    //   }
+    // }
     return this;
   }
 
   toStr() {
     return this.data.value
-      ? `${this.data.key}:${this.data.value}`
+      ? `${this.data.key}:${this.data.value}:${this.height}`
       : `${this.data.key}`;
   }
 }
@@ -248,18 +363,17 @@ class Tree {
       return node;
     }
 
-    const node = this.root.insert(key, value);
+    const [node, root] = this.root.insert(key, value);
 
-    this.root = node.getRoot();
+    this.root = root;
     return node;
   }
 
   remove(key) {
     if (!this.root) return false;
-
-    const [removed, node] = this.root.remove(key);
-    this.root = node;
-    return removed;
+    const [status, root] = this.root.remove(key);
+    this.root = root;
+    return status;
   }
 
   print() {
@@ -314,14 +428,19 @@ function test3() {
   const tree = new Tree();
 
   for (let i = 0; i < 10; i++) {
-    tree.insert(i);
+    const a = tree.insert(i);
   }
 
   tree.print();
 
-  tree.remove(5);
-
+  tree.remove(3);
+  tree.print();
+  tree.remove(1);
   tree.print();
 }
 
-test3();
+// test3();
+
+module.exports = {
+  Tree,
+};

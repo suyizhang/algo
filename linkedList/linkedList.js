@@ -108,22 +108,22 @@ class LinkedList {
   }
 }
 
-let a = new LinkedList();
-a.append(1);
-a.append(2);
-a.append(3);
-a.insert(2, 4);
-a.prepend(0);
+// let a = new LinkedList();
+// a.append(1);
+// a.append(2);
+// a.append(3);
+// a.insert(2, 4);
+// a.prepend(0);
 
-a._print();
+// a._print();
 
-for (let i = 0; i < a.size; i++) {
-  console.log(a.get(i));
-}
+// for (let i = 0; i < a.size; i++) {
+//   console.log(a.get(i));
+// }
 
-for (let i = 0; i < a.size; i++) {
-  a.set(i, i * i);
-}
+// for (let i = 0; i < a.size; i++) {
+//   a.set(i, i * i);
+// }
 
-a._print();
+// a._print();
 

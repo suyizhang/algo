@@ -36,7 +36,7 @@ class LinkedList {
 
   insert(i, value) {
     if (this.size < i || i < 0) {
-      throw new RangeError('out of range');
+      throw new RangeError("out of range");
     }
     const node = new Node(value);
 
@@ -52,13 +52,42 @@ class LinkedList {
 
   remove(i) {
     if (this.size - 1 < i || i < 0) {
-      throw new RangeError('out of range');
+      throw new RangeError("out of range");
     }
-   
+
     const p = this._getNode(i - 1);
     p.removeAfter();
     this.size -= 1;
   }
+
+  removeByF(f) {
+    let p1 = this.head;
+    let p2 = this.head.next;
+
+    while (p2) {
+      if (f(p2)) {
+        p1.removeAfter();
+        this.size -= 1;
+        return true;
+      }
+      p1 = p2;
+      p2 = p2.next;
+    }
+
+    return false;
+  }
+
+  findByF(f) {
+    let p2 = this.head.next;
+    while(p2) {
+      if (f(p2.data)) {
+        return p2;
+      }
+      p2 = p2.next;
+    }
+    return p2;
+  }
+
 
   // 获取节点 i
   _getNode(i) {
@@ -71,7 +100,7 @@ class LinkedList {
 
   get(i) {
     if (i > this.size - 1 || i < 0) {
-      throw new RangeError('out of range');
+      throw new RangeError("out of range");
     }
 
     return this._getNode(i).data;
@@ -79,7 +108,7 @@ class LinkedList {
 
   set(i, value) {
     if (i > this.size - 1 || i < 0) {
-      throw new RangeError('out of range');
+      throw new RangeError("out of range");
     }
 
     const node = this._getNode(i);
@@ -89,24 +118,29 @@ class LinkedList {
   _print() {
     const arr = [];
     let p = this.head;
-    while(p.next) {
+    while (p.next) {
       p = p.next;
       arr.push(p.data);
     }
-    console.log(`[ ${arr.join(', ')} ]`);
+    console.log(`[ ${arr.join(", ")} ]`);
   }
+
 }
 
-let a = new LinkedList();
-a.append(1);
-a.append(2);
-a.append(3);
-a.insert(2, 4);
-a.prepend(0);
-console.log(a.size);
-a._print();
-a.remove(0);
-a._print();
+module.exports = {
+  LinkedList,
+};
+
+// let a = new LinkedList();
+// a.append(1);
+// a.append(2);
+// a.append(3);
+// a.insert(2, 4);
+// a.prepend(0);
+// console.log(a.size);
+// a._print();
+// a.remove(0);
+// a._print();
 
 // for (let i = 0; i < a.size; i++) {
 //   console.log(a.get(i));
@@ -117,4 +151,3 @@ a._print();
 // }
 
 // a._print();
-
