@@ -1,10 +1,21 @@
 /**
  * 大顶堆
  * 对于大顶堆（小顶堆），堆顶元素（根节点）的值是最大（最小）的。
+ * https://www.hello-algo.com/chapter_heap/heap/#4
  */
 class Heap {
-  constructor() {
-    this.heap = [];
+  // constructor() {
+  //   this.heap = [];
+  // }
+
+  /* 构造方法，建立空堆或根据输入列表建堆 */
+  constructor(nums) {
+    // 将列表元素原封不动添加进堆
+    this.heap = nums === undefined ? [] : [...nums];
+    // 堆化除叶节点以外的其他所有节点
+    for (let i = this.parent(this.size() - 1); i >= 0; i--) {
+      this.siftDown(i);
+    }
   }
 
   left(i) {
