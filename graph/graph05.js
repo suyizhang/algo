@@ -18,9 +18,9 @@ class Node {
 }
 
 class Edge {
-  constructor(left, right) {
-    this.left = left;
-    this.right = right;
+  constructor(src, dest) {
+    this.src = src;
+    this.dest = dest;
     this.value = {};
   }
 }
@@ -56,47 +56,47 @@ class UndirectedGraph {
     this.nodes.delete(key);
   }
 
-  addEdge(leftKey, rightKey) {
-    const [left, right] = this.sortEdgeKey(leftKey, rightKey);
-    if (!this.getNode(left) || !this.getNode(right)) {
+  addEdge(srcKey, destKey) {
+    const [src, dest] = this.sortEdgeKey(srcKey, destKey);
+    if (!this.getNode(src) || !this.getNode(dest)) {
       return;
     }
-    if (this.getEdge(left, right)) {
+    if (this.getEdge(src, dest)) {
       return;
     }
-    const edge = new Edge(left, right);
-    this.edges.set(left + right, edge);
-    this.getNode(left).addNeighbor(right);
-    this.getNode(right).addNeighbor(left);
+    const edge = new Edge(src, dest);
+    this.edges.set(src + dest, edge);
+    this.getNode(src).addNeighbor(dest);
+    this.getNode(dest).addNeighbor(src);
 
     return edge;
   }
 
-  getEdge(leftKey, rightKey) {
-    const [left, right] = this.sortEdgeKey(leftKey, rightKey);
-    return this.edges.get(left + right);
+  getEdge(srcKey, destKey) {
+    const [src, dest] = this.sortEdgeKey(srcKey, destKey);
+    return this.edges.get(src + dest);
   }
 
-  removeEdge(leftKey, rightKey) {
-    const [left, right] = this.sortEdgeKey(leftKey, rightKey);
+  removeEdge(srcKey, destKey) {
+    const [src, dest] = this.sortEdgeKey(srcKey, destKey);
 
-    if (!this.getEdge(left, right)) {
+    if (!this.getEdge(src, dest)) {
       return;
     }
-    const leftNode = this.getNode(left);
-    const rgihtNode = this.getNode(right);
-    this.edges.delete(left + right);
-    leftNode.removeNeighbor(right);
-    rgihtNode.removeNeighbor(left);
+    const leftNode = this.getNode(src);
+    const rgihtNode = this.getNode(dest);
+    this.edges.delete(src + dest);
+    leftNode.removeNeighbor(dest);
+    rgihtNode.removeNeighbor(src);
   }
 
-  sortEdgeKey(leftKey, rightKey) {
-    let left = leftKey,
-      right = rightKey;
-    if (leftKey > rightKey) {
-      [left, right] = [right, left];
+  sortEdgeKey(srcKey, destKey) {
+    let src = srcKey,
+      dest = destKey;
+    if (srcKey > destKey) {
+      [src, dest] = [dest, src];
     }
-    return [String(left), String(right)];
+    return [String(src), String(dest)];
   }
 }
 
