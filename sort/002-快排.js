@@ -1,4 +1,4 @@
-function quickSort(arr) {
+function quickSort (arr) {
   const len = arr.length;
   if (len <= 1) {
     return arr;

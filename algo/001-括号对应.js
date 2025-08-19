@@ -7,7 +7,7 @@ function main(str) {
   const pairs = { ")": "(", "}": "{", "]": "[" };
   for (let char of str) {
     // 遍历字符串中的每个字符
-    if (pairs[[char]]) {
+    if (pairs[char]) {
       // 如果是右括号，则检查栈顶元素
       const top = stack.pop();
 
